@@ -1,0 +1,30 @@
+###
+GET http://localhost:3001/api/v1/blogs/
+
+###
+GET http://localhost:3001/api/v1/blogs/1
+
+###
+POST http://localhost:3001/api/v1/blogs/create
+Content-Type: application/json
+
+{
+    "title": "Blog App Backend",
+    "author": "Lishu",
+    "likes": 10,
+    "url": "Hariblogs.com.np"
+}
+
+###
+PUT http://localhost:3001/api/v1/blogs/update/3
+Content-Type: application/json
+
+{
+    "title": "Blog App Backend Testing",
+    "author": "Hari Shrestha",
+    "likes": 5,
+    "url": "HariShresthablogs.com.np"
+}
+
+###
+DELETE http://localhost:3001/api/v1/blogs/delete/4

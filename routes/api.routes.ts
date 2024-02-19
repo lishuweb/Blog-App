@@ -1,12 +1,7 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 const router = express.Router();
-import blogRouter from '../modules/user/user.routes';
+import blogRouter from '../modules/blog/blog.route';
 
-router.use('/users',blogRouter);
-
-
-
-
-
+router.use('/blogs',blogRouter);
 
 export default router;
