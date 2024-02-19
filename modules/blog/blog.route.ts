@@ -1,40 +1,31 @@
-import express, { Router, Request, Response } from 'express';
-const router: Router  = express.Router();
+import  express, {Request, Response} from 'express';
+const router = express.Router();
 import blogController from './blog.controller';
 
-router.get('/', blogController.blogData);
+router.get('/', async(_req: Request, res: Response) => {
+    const blogDetails = await blogController.blogData();
+    res.status(200).json({blogs: blogDetails});
+})
 router.get('/:id', async(req: Request, res: Response) => {
     const blogById = await blogController.blogDataId(req.params.id);
     res.status(200).json({
         data: blogById,
     });
 });
-router.post('/create', async(req: Request, res: Response) => {
-    const myData = {
-        title: req.body.title,
-        author: req.body.author,
-        likes: req.body.likes,
-        url: req.body.url
-    }
-    const newBlog = await blogController.blogCreate(myData);
-    res.status(201).json(newBlog);
+
+router.post('/', async(req: Request, res: Response) => {
+    const newBlog = await blogController.blogCreate(req.body);
+    return res.status(201).json(newBlog);
 });
 
-router.put('/update/:id', async(req: Request, res: Response) => {
-    const updateData = {
-        id: parseInt(req.params.id),
-        title: req.body.title,
-        author: req.body.author,
-        likes: req.body.likes,
-        url: req.body.url
-    }
-    const newBlog = await blogController.blogUpdate(updateData);
-    res.status(201).json(newBlog);
+router.put('/:id', async(req: Request, res: Response) => {
+    const newBlog = await blogController.blogUpdate(req.params.id, req.body);
+    return res.status(201).json(newBlog);
 });
-router.delete('/delete/:id', async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     const deleteData = await blogController.blogDelete(id);
-    res.status(200).json(deleteData);
-  });
+    return res.status(200).json(deleteData);
+});
 
 export default router;

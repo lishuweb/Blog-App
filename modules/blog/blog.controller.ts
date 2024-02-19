@@ -1,46 +1,36 @@
-import { Request, Response } from 'express';
+// import express from 'express';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
+import { Blog } from './blog.type';
 
-const blogData = async(_req: Request, res: Response) => {
-    const blogs = await prisma.blog.findMany();
-    return res.status(200).json({blogs});
+const blogData = async(): Promise<Blog[]> => {
+    return await prisma.blog.findMany();
 };
 
-const blogDataId = async(id: string) => {
+const blogDataId = async(id: string): Promise<Blog | null> => {
     return await prisma.blog.findUnique({
         where: { 
-            id: parseInt(id) 
+            id: Number(id), 
         },
     });
 };
 
-const blogCreate = async({title, author, likes, url}: any) => {
+const blogCreate = async(blog: Blog): Promise<Blog> => {
     return await prisma.blog.create({
-        data: {
-            title: title,
-            author: author,
-            likes: likes,
-            url: url
-        }
+        data: blog,
     });
 };
 
-const blogUpdate = async({id, title, author, likes, url} : any )=>{
+const blogUpdate = async(id: string, updateBlog: Blog ): Promise<Blog | null>=>{
     return await prisma.blog.update({
         where: {
-            id: id     
+            id: Number(id)     
         },
-        data: {
-            title: title,
-            author: author,
-            likes: likes,
-            url: url
-        }
+        data: updateBlog
     });
 };
 
-const blogDelete = async( id : number ) => {
+const blogDelete = async( id : number ): Promise<Blog> => {
     return await prisma.blog.delete({
         where: {
             id: id
