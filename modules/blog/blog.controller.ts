@@ -1,4 +1,3 @@
-// import express from 'express';
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 import { Blog } from './blog.type';
@@ -15,16 +14,16 @@ const blogDataId = async(id: string): Promise<Blog | null> => {
     });
 };
 
-const blogCreate = async(blog: Blog): Promise<Blog> => {
+const blogCreate = async (blog: Blog): Promise<Blog> => {
     return await prisma.blog.create({
-        data: blog,
+        data: blog
     });
 };
 
-const blogUpdate = async(id: string, updateBlog: Blog ): Promise<Blog | null>=>{
+const blogUpdate = async(id: number, updateBlog: Blog ): Promise<Blog | null>=>{
     return await prisma.blog.update({
         where: {
-            id: Number(id)     
+            id: id     
         },
         data: updateBlog
     });
