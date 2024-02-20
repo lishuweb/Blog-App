@@ -2,10 +2,9 @@ import  express, {Request, Response} from 'express';
 const router = express.Router();
 import blogController from './blog.controller';
 import { Blog } from './blog.type';
-
 router.get('/', async(_req: Request, res: Response): Promise<Response<Blog[]>>=> {
     const blogDetails = await blogController.blogData();
-    return res.status(200).json({blogs: blogDetails});
+    return res.status(200).json({data: blogDetails});
 });
 router.get('/:id', async(req: Request, res: Response): Promise<Response<Blog>>=> {
     const blogById = await blogController.blogDataId(req.params.id);
