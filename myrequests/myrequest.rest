@@ -9,21 +9,18 @@ POST http://localhost:3001/api/v1/blogs/
 Content-Type: application/json
 
 {
-    "title": "My Journey",
-    "author": "Sharmila",
-    "likes": 8,
-    "url": "sharmi.com.np"
+    "title": "HeloooHellooooo",
+    "author": "minuuuuu",
+    "likes": -5,
+    "url": "https://zod.dev/?id=optionals"
 }
 
 ###
-PUT http://localhost:3001/api/v1/blogs/6
+PUT http://localhost:3001/api/v1/blogs/12
 Content-Type: application/json
 
 {
-    "title": "My Journey",
-    "author": "Sharmila",
-    "likes": 8,
-    "url": "sharmijirel.com.np"
+    "title": ""
 }
 
 ###
