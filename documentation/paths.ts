@@ -113,7 +113,7 @@ export default {
                     200: {
                         description: "Successful response",
                         schema: {
-                            $ref: "#/definitions/blogsResponse",
+                            $ref: "#/definitions/blogs",
                         }
                     },
                     400: {
@@ -157,6 +157,167 @@ export default {
                     },
                     404: {
                         description: "Blog Not Found"
+                    }
+                }
+            }
+        },
+        "/users": {
+            post: {
+                tags: ["users"],
+                summary: "Create a new user.",
+                description: 'Creates a new user and returns the newly added user.',
+                operationId: "post",
+                consumes: ["application/json"],
+                produces: ["application/json"],
+                parameters: [
+                    {
+                        in: "body",
+                        name: "body",
+                        description: "Payload/Data for creating a new blog",
+                        required: true,
+                        schema: {
+                            $ref: "#/definitions/users",
+                        },
+                    },
+                ],
+                responses: {
+                    201: {
+                        description: "User Created",
+                        schema: {
+                            $ref: "#/definitions/users",
+                        },
+                    },
+                    500: {
+                        description: "Creation Unsuccess",
+                    },
+                },
+            },
+            get: {
+                tags: ["users"],
+                summary: "Retrieve all the users.",
+                description: "Retrieve all the available users.",
+                operationId: "getAll",
+                consumes: ["application/json"],
+                produces: ["application/json"],
+                responses: {
+                    200: {
+                        description: "Operation Success",
+                        schema: {
+                            $ref: "#/definitions/users",
+                        },
+                    },
+                    500: {
+                        description: "Invalid Operation",
+                    },
+                },
+            }
+        },
+        "/users/{id}" : {
+            get: {
+                tags: ["users"],
+                summary: "Retrieve a single user.",
+                description: "retrieves details of a apecific user using its ID.",
+                operationId: "getById",
+                produces: ["application/json"],
+                parameters: [
+                    {
+                        name: "id",
+                        in: "path",
+                        description: "The id of the user to retrieve.",
+                        required: true,
+                        type: "integer"
+                    },
+                ],
+                responses: {
+                    200: {
+                        description: "Successful Operation",
+                        schema: {
+                            $ref: "#/definitions/users",
+                        }
+                    },
+                    400: {
+                        description: "ID Invalid"
+                    },
+                    500: {
+                        description: "Invalid Operation"
+                    },
+                    404: {
+                        description: "User Not Found"
+                    }
+                }
+            },
+            put: {
+                tags: ["users"],
+                summary: "Update the user using its ID.",
+                description: "Deletes the user through its id and returns updated one. ",
+                operationId: "update",
+                produces: ["application/json"],
+                parameters: [
+                    {
+                        name: "id",
+                        in: "path",
+                        description: "The ID of the user to update.",
+                        required: true,
+                        type: "integer"
+                    },
+                    {
+                        in: "body",
+                        name: "body",
+                        description: "Payload/Data for updating the user.",
+                        required: true,
+                        schema: {
+                            $ref: "#/definitions/users",
+                        }
+                    }
+                ],
+                responses: {
+                    200: {
+                        description: "Successful response",
+                        schema: {
+                            $ref: "#/definitions/users",
+                        }
+                    },
+                    400: {
+                        description: "Invalid ID Supplied"
+                    },
+                    500: {
+                        description: "Invalid Operation"
+                    },
+                    404: {
+                        description: "User Not Found"
+                    }
+                }
+            },
+            delete: {
+                tags: ["users"],
+                summary: "Delete a particular user.",
+                description: "Deletes the user using its ID.",
+                operationId: "delete",
+                produces: ["application/json"],
+                parameters: [
+                    {
+                        name: "id",
+                        in: "path",
+                        description: "the ID of the user to be delete.",
+                        required: true,
+                        type: "integer"
+                    }
+                ],
+                responses: {
+                    200: {
+                        description: "Operation Success",
+                        schema: {
+                            $ref: "#/definitions/users",
+                        }
+                    },
+                    400: {
+                        description: "Invalid ID Supplied"
+                    },
+                    500: {
+                        description: "Invalid Operation"
+                    },
+                    404: {
+                        description: "User Not Found"
                     }
                 }
             }

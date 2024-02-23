@@ -8,6 +8,15 @@ export default {
                 likes: { type: "number" },
                 url: { type: "string" }
             }
+        },
+        users: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+                email: { type: "string" },
+                password: { type: "string" },
+                image: { type: "string" }
+            }
         }
     }
 };

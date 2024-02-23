@@ -9,13 +9,14 @@ import swaggerJSDocs from './documentation';
 
 app.use(express.json());
 app.use(cors());
-app.use(express.urlencoded({ extended: false }));
 
 app.use(
     "/api-docs", 
     swaggerUI.serve, 
     swaggerUI.setup(swaggerJSDocs, { explorer: true })
 );
+
+app.use(express.urlencoded({ extended: false }));
 
 app.use('/', userRoutes);
   
