@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { Request, Response, NextFunction } from "express"; 
+import { blogSchema, updateBlogSchema } from "../modules/blog/blog.validator";
 
-export const blogSchemaPostValidator = (schema: any) => async(req: Request, res: Response, next: NextFunction) => {
+export const blogSchemaPostValidator = (req: Request, res: Response, next: NextFunction) => {
     try{
-        const blogData = await schema.parseAsync(req.body);
-        req.body = blogData;
+        blogSchema.parseAsync(req.body);
         next();
     }
     catch(error)
@@ -27,10 +27,9 @@ export const blogSchemaPostValidator = (schema: any) => async(req: Request, res:
     }
 };
 
-export const updateBlogSchemaValidator = (schema: any) => async(req: Request, res: Response, next: NextFunction) => {
+export const updateBlogSchemaValidator = (req: Request, res: Response, next: NextFunction) => {
     try{
-        const updateData = await schema.parseAsync(req.body);
-        req.body = updateData;
+        updateBlogSchema.parseAsync(req.body);
         next();
     }
     catch(error)

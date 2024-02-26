@@ -1,14 +1,19 @@
 import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
+import { userSchema } from '../modules/user/user.validator';
 
-export const userSchemaPostValidator = (schema: any) => async(req: Request, res: Response, next: NextFunction) => {
+export const userSchemaPostValidator = (req: Request, res: Response, next: NextFunction) => {
     try{
-        const userData = await schema.parseAsync(req.body);
-        req.body = userData;
+        const { name, email, password, roles } = req.body;
+        const userData = {
+            name, email, password, roles, image: req.file?.filename
+        };
+        userSchema.parse(userData);
         next();
     }
     catch(error)
     {
+        console.log(req.body, "Checking request.body")
         if(error instanceof z.ZodError)
         {
             const errorMessage = error.errors.map((issue: any) => ({
