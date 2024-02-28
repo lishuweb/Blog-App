@@ -18,6 +18,7 @@ export const userSchemaPostValidator = (req: Request, res: Response, next: NextF
     }
     catch(error)
     {
+        console.log(req.body, "Checking request.body")
         if(error instanceof z.ZodError)
         {
             console.log(error.errors, "Catched error");

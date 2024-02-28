@@ -32,10 +32,6 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     }
     catch(error)
     {
-        next(error)
-    }
-});
-
 router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Request, res: Response, next: NextFunction) => {
     try{
         if(req?.file)
@@ -92,7 +88,7 @@ router.post('/login', async(req: Request, res: Response, next: NextFunction) => 
     }
 });
 
-router.put('/:id', async(req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', async(req: Request, res: Response, next: NextFunction) => {                      //For Api Test
     try{
         const userUpdate = await userController.userUpdate(parseInt(req.params.id),req.body);
         res.status(201).json({
@@ -105,7 +101,7 @@ router.put('/:id', async(req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {                  //For Api Test
     try{
         const userDelete = await userController.userDelete(parseInt(req.params.id));
         res.status(201).json({

@@ -9,18 +9,18 @@ POST http://localhost:3001/api/v1/blogs/
 Content-Type: application/json
 
 {
-    "title": "HeloooHellooooo",
-    "author": "minuuuuu",
-    "likes": -5,
+    "title": "SZA Snooze",
+    "author": "SZA",
+    "likes": 20,
     "url": "https://zod.dev/?id=optionals"
 }
 
 ###
-PUT http://localhost:3001/api/v1/blogs/12
+PUT http://localhost:3001/api/v1/blogs/13
 Content-Type: application/json
 
 {
-    "title": ""
+    "likes": 30
 }
 
 ###
