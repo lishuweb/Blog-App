@@ -3,7 +3,7 @@ const router = express.Router();
 import userController from './user.controller';
 import multer from 'multer';
 import { userSchemaPostValidator } from '../../middleware/userSchemaValidator';
-import { userSchema } from './user.validator';
+// import { userSchema } from './user.validator';
 
 const storage = multer.diskStorage({
     destination: function (_req, _file, cb) {
@@ -36,7 +36,7 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-router.post('/', userSchemaPostValidator(userSchema), upload.single("image"), async(req: Request, res: Response, next: NextFunction) => {
+router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Request, res: Response, next: NextFunction) => {
     try{
         if(req?.file)
         {
@@ -53,9 +53,34 @@ router.post('/', userSchemaPostValidator(userSchema), upload.single("image"), as
     }
 });
 
+router.post('/verifyUser', async(req: Request, res: Response, next: NextFunction) => {
+    try{
+        const verifyUser = await userController.verifyUser(req.body);
+        console.log(req.body, 'Request Body');
+        console.log(verifyUser, "VerigyUser");
+        res.status(200).json({
+            data: verifyUser,
+            message: "User Verified!"
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
 router.post('/login', async(req: Request, res: Response, next: NextFunction) => {
     try{
-        const loginData = await userController.userLogin(req.body);
+        const { email, password } = req.body;
+        if(!email)
+        {
+            throw new Error("Email field is required!");
+        }
+        if(!password)
+        {
+            throw new Error("Password field is required!")
+        }
+        const loginData = await userController.userLogin(email, password);
         res.status(200).json({
             message: "User logged in successfully",
             data: loginData 
