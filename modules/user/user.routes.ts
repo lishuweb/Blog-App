@@ -32,6 +32,10 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     }
     catch(error)
     {
+        next(error);
+    }
+});
+
 router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Request, res: Response, next: NextFunction) => {
     try{
         if(req?.file)

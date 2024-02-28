@@ -59,7 +59,7 @@ POST http://localhost:3001/api/v1/users/login
 Content-Type: application/json
 
 {
-    "email": "sunarakash1122@gmail.com",
+    "email": "prabeshmagar.rumsan@gmail.com",
     "password": "mememe@123"
 }
 
@@ -68,6 +68,6 @@ POST http://localhost:3001/api/v1/users/verifyUser
 Content-Type: application/json
 
 {
-    "email": "sunarakash1122@gmail.com",
-    "token": 545795
+    "email": "prabeshmagar.rumsan@gmail.com",
+    "token": 451402
 }
