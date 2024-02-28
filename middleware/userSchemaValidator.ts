@@ -5,10 +5,15 @@ import { userSchema } from '../modules/user/user.validator';
 export const userSchemaPostValidator = (req: Request, res: Response, next: NextFunction) => {
     try{
         const { name, email, password, roles } = req.body;
-        const userData = {
-            name, email, password, roles, image: req.file?.filename
+        const userDetails = {
+            name,
+            email,
+            password,
+            roles,
+            image: req.file?.filename
         };
-        userSchema.parse(userData);
+        console.log(userDetails, 'Checking try block')
+        userSchema.parse(userDetails);
         next();
     }
     catch(error)
@@ -16,6 +21,7 @@ export const userSchemaPostValidator = (req: Request, res: Response, next: NextF
         console.log(req.body, "Checking request.body")
         if(error instanceof z.ZodError)
         {
+            console.log(error.errors, "Catched error");
             const errorMessage = error.errors.map((issue: any) => ({
                 message: `${issue.path.join('.')} is ${issue.message}`,
             }));

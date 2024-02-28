@@ -5,10 +5,17 @@ export interface Registration {
     password?: string,
     roles?: string,
     image: string
+    isEmailVerified?: boolean,
+    isActive?: boolean,
+    isArchive?: boolean
 };
 
 export enum Role {
     USER, 
     ADMIN
-}
+};
 
+export interface UserLogin {
+    email: string,
+    token: string
+};
