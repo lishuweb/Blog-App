@@ -211,15 +211,78 @@ const forgotPassword = async ( email: string, password: string, token: number ):
     return true;
 };
 
-const userUpdate = async(id: number, user: any) => {
-    console.log(id, "ID");
-    return await prisma.registration.update({
+const changePasswordToken = async ( email: string ): Promise<Boolean> => {
+    const user = await prisma.registration.findUnique({
         where: {
-            id: id
-        },
-        data: user
+            email: email
+        }
     });
+    if(!user)
+    {
+        throw new Error('User not found!');
+    }
+    const token = generateOTP();
+    await prisma.auth.create({
+        data: {
+            email,
+            token: Number(token)
+        }
+    });
+    await mail(email, token);
+    return true;
 };
+
+const changePassword = async ( email: string, oldPassword: string, newPassword: string, token: number ) => {
+    const userCheck = await prisma.auth.findUnique({
+        where: {
+            email
+        }
+    });
+    console.log(oldPassword, "OLD PASSWORD");
+    console.log(newPassword, "NEW PASSWORD");
+    const saltRounds = 10;
+    if(!userCheck)
+    {
+        throw new Error ("User Not Found, Please verify first!");
+    }
+    const tokenValid = verifyOTP(String(token));
+    if(!tokenValid)
+    {
+        throw new Error ("Token is invalid, Please enter valid token!");
+    }
+    const tokenCheck = userCheck.token === token;
+    if(!tokenCheck)
+    {
+        throw new Error ("Email is invalid!");
+    }
+    const registerUser = await prisma.registration.findUnique({
+        where: {
+            email,
+            isEmailVerified: true,
+            isActive: true
+        }
+    });
+    if(!registerUser)
+    {
+        throw new Error ("User is not registered, Please register first!");
+    }
+    const passwordHash = await bcrypt.compare(oldPassword, registerUser.password);
+    if(!passwordHash)
+    {
+        throw new Error ("Password didn't matched");
+    }
+    await prisma.registration.update({
+        where: {
+            email
+        },
+        data: {
+            password: await bcrypt.hash(newPassword, saltRounds)
+        }
+    });
+    return true;
+};
+
+
 
 const userDelete = async (id: number) => {
     return await prisma.registration.delete({
@@ -229,5 +292,5 @@ const userDelete = async (id: number) => {
     })
 };
 
-export default { userData, userCreate, userUpdate, userDelete, userById, userLogin, verifyUser, forgotPasswordToken, forgotPassword };
+export default { userData, userCreate, userDelete, userById, userLogin, verifyUser, forgotPasswordToken, forgotPassword, changePassword, changePasswordToken };
 

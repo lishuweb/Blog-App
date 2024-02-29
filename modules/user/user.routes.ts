@@ -124,11 +124,16 @@ router.post('/forgotpassword', async (req: Request, res: Response, next: NextFun
     }
 });
 
-router.put('/:id', async(req: Request, res: Response, next: NextFunction) => {                      //For Api Test
+router.post('/changepasswordtoken', async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const userUpdate = await userController.userUpdate(parseInt(req.params.id),req.body);
+        const { email } = req.body;
+        if(!email)
+        {
+            throw new Error ("Email field is required!");
+        }
+        const data = await userController.changePasswordToken( email );
         res.status(201).json({
-            data: userUpdate
+            data: data
         });
     }
     catch(error)
@@ -136,6 +141,21 @@ router.put('/:id', async(req: Request, res: Response, next: NextFunction) => {  
         next(error);
     }
 });
+
+router.put('/changepassword', async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const { email, oldPassword, newPassword, token } = req.body;
+        const data = await userController.changePassword( email, oldPassword, newPassword, token );
+        res.status(201).json({
+            data: data
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
 
 router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {                  //For Api Test
     try{
