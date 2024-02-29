@@ -92,6 +92,38 @@ router.post('/login', async(req: Request, res: Response, next: NextFunction) => 
     }
 });
 
+router.post('/forgotpasswordtoken', async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const {email} = req.body;
+        if(!email)
+        {
+            throw new Error("Email field is missing!");
+        }
+        const response = await userController.forgotPasswordToken(email);
+        res.status(201).json({
+            data: response
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
+router.post('/forgotpassword', async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const { email, password, token } = req.body;
+        const data = await userController.forgotPassword( email, password, token );
+        res.status(201).json({
+            data: data
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
 router.put('/:id', async(req: Request, res: Response, next: NextFunction) => {                      //For Api Test
     try{
         const userUpdate = await userController.userUpdate(parseInt(req.params.id),req.body);

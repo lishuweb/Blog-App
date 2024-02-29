@@ -150,6 +150,67 @@ const userLogin = async (email: string, password: string): Promise<UserLogin> =>
     }
 };
 
+const forgotPasswordToken = async (email: string) => {
+    const findUser = await prisma.registration.findUnique({
+        where: {
+            email: email,
+            isEmailVerified: true,
+            isActive: true
+        }
+    });
+    console.log(findUser, "Find User");
+    if(!findUser)
+    {
+        throw new Error("User Not Found, Please provide valid email!");
+    }
+    const token = generateOTP();
+    await prisma.auth.create({
+        data: {
+            email: email,
+            token: Number(token)
+        }
+    });
+    await mail(email, token);
+    return true;
+};
+
+const forgotPassword = async ( email: string, password: string, token: number ): Promise<boolean> => {
+    const findUser = await prisma.auth.findUnique({
+        where: {
+            email
+        }
+    });
+    if(!findUser)
+    {
+        throw new Error("User Not Found!");
+    }
+    const isValidToken = await verifyOTP(String(token));
+    if(!isValidToken)
+    {
+        throw new Error("Token isnot Valid");
+    }
+    const isToken = findUser.token === token;
+    if(!isToken)
+    {
+        throw new Error("Token didn't matched!");
+    }
+    const saltRounds = 10;
+    await prisma.registration.update({
+        where: {
+            email
+        },
+        data: {
+            password: await bcrypt.hash(password, saltRounds)
+        }
+    });
+    await prisma.auth.delete({
+        where: {
+            email
+        }
+    });
+    return true;
+};
+
 const userUpdate = async(id: number, user: any) => {
     console.log(id, "ID");
     return await prisma.registration.update({
@@ -168,5 +229,5 @@ const userDelete = async (id: number) => {
     })
 };
 
-export default { userData, userCreate, userUpdate, userDelete, userById, userLogin, verifyUser };
+export default { userData, userCreate, userUpdate, userDelete, userById, userLogin, verifyUser, forgotPasswordToken, forgotPassword };
 
