@@ -9,3 +9,15 @@ export const generateToken = (userData: any) => {
     }
     return jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1800s' });
 };
+
+export const verifyToken = (token: string) => {
+    try{
+        const isValid = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET || "");
+        return isValid;
+    }
+    catch(error)
+    {
+        throw new Error ("Invalid Token!");
+    }
+};
+

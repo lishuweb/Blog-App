@@ -29,6 +29,8 @@ model registration {
   isEmailVerified   Boolean   @default(false)
   isActive          Boolean   @default(false)
   isArchive         Boolean   @default(false)
+  createdBy         Int       @default(0) 
+  updatedBy         Int       @default(0) 
 }
 
 enum Role {
