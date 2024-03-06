@@ -3,6 +3,7 @@ const router = express.Router();
 import multer from 'multer';
 import { userSchemaPostValidator } from '../../middleware/userSchemaValidator';
 import authControllers from './auth.controllers';
+import { authVerifyValidator } from '../../middleware/authSchemaValidator';
 
 const storage = multer.diskStorage({
     destination: function (_req, _file, cb) {
@@ -32,7 +33,7 @@ router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Req
     }
 });
 
-router.post('/verifyUser', async(req: Request, res: Response, next: NextFunction) => {
+router.post('/verifyUser', authVerifyValidator, async(req: Request, res: Response, next: NextFunction) => {
     try{
         const verifyUser = await authControllers.verifyUser(req.body);
         console.log(req.body, 'Request Body');
@@ -60,6 +61,7 @@ router.post('/login', async(req: Request, res: Response, next: NextFunction) => 
             throw new Error("Password field is required!")
         }
         const loginData = await authControllers.userLogin(email, password);
+        console.log(loginData, "Login Data");
         res.status(200).json({
             message: "User logged in successfully",
             data: loginData 

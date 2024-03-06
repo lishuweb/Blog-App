@@ -10,7 +10,6 @@ export interface Registration {
     isArchive?: boolean,
     createdBy?: number,
     updatedBy?: number,
-    currentUser?: string,
     currentRole?: string
 };
 

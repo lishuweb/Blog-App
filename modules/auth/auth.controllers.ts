@@ -1,15 +1,15 @@
 import { PrismaClient } from "@prisma/client"; 
 const prisma = new PrismaClient();
-import bcrypt from 'bcrypt';
+import { bcryptPassword, comparePassword } from "../../utils/bcrypt";
 import { generateOTP } from "../../utils/otp";
 import { mail } from "../../services/mail";
-import { Registration } from "../user/user.type";
+import { registration } from "@prisma/client";
+// import { Registration } from "../user/user.type";
 import { verifyOTP } from "../../utils/otp";
-import { UserLogin } from "./auth.type";
+// import { UserLogin } from "./auth.type";
 import { generateToken } from "../../utils/jwt";
 
-const userCreate = async(user: any): Promise<Registration> => {
-    const salt = 10;
+const userCreate = async(user: any): Promise<registration> => {
     const {
         name, 
         email, 
@@ -17,10 +17,13 @@ const userCreate = async(user: any): Promise<Registration> => {
         image, 
         isEmailVerified, 
         isActive, 
-        isArchive
+        isArchive,
+        createdBy,
+        currentRole
     } = user;
     console.log(user, "Lidhsu")
-    const passwordHash = await bcrypt.hash(user.password, salt);
+    // const passwordHash = await bcrypt.hash(user.password, salt);
+    const passwordHash = await bcryptPassword(user.password);
     const newUser = {
         name,
         email,
@@ -29,7 +32,9 @@ const userCreate = async(user: any): Promise<Registration> => {
         image,
         isEmailVerified,
         isActive,
-        isArchive
+        isArchive,
+        createdBy,
+        currentRole
     };
     const otpToken = generateOTP();
     const authUser = {
@@ -85,7 +90,7 @@ const verifyUser = async(authUser: any) => {
     return true;
 };
 
-const userLogin = async (email: string, password: string): Promise<UserLogin> => {
+const userLogin = async (email: string, password: string): Promise<any> => {
     const userCheck = await prisma.registration.findUnique({
         where: {
             email
@@ -103,7 +108,8 @@ const userLogin = async (email: string, password: string): Promise<UserLogin> =>
     {
         throw new Error("Email is not active, please activate your email first!");
     }
-    const isPassword = await bcrypt.compare(password, userCheck.password);
+    // const isPassword = await bcrypt.compare(password, userCheck.password);
+    const isPassword = await comparePassword(password, userCheck.password);
     if(isPassword)
     {
         const userForToken = {
@@ -111,9 +117,10 @@ const userLogin = async (email: string, password: string): Promise<UserLogin> =>
             id: userCheck.id
         }
         const token = generateToken(userForToken);
+        // const refreshToken = generateRefreshToken(userForToken);
         return {
             email: userCheck.email,
-            token
+            token: token
         };
     }
     else 
@@ -166,13 +173,15 @@ const forgotPassword = async ( email: string, password: string, token: number ):
     {
         throw new Error("Token didn't matched!");
     }
-    const saltRounds = 10;
+    // const saltRounds = 10;
+    const passwordHash = await bcryptPassword(password);
     await prisma.registration.update({
         where: {
             email
         },
         data: {
-            password: await bcrypt.hash(password, saltRounds)
+            // password: await bcrypt.hash(password, saltRounds)
+            password: passwordHash
         }
     });
     await prisma.auth.delete({
@@ -212,7 +221,7 @@ const changePassword = async ( email: string, oldPassword: string, newPassword: 
     });
     console.log(oldPassword, "OLD PASSWORD");
     console.log(newPassword, "NEW PASSWORD");
-    const saltRounds = 10;
+    // const saltRounds = 10;
     if(!userCheck)
     {
         throw new Error ("User Not Found, Please verify first!");
@@ -238,17 +247,20 @@ const changePassword = async ( email: string, oldPassword: string, newPassword: 
     {
         throw new Error ("User is not registered, Please register first!");
     }
-    const passwordHash = await bcrypt.compare(oldPassword, registerUser.password);
+    // const passwordHash = await bcrypt.compare(oldPassword, registerUser.password);
+    const passwordHash = await comparePassword(oldPassword, registerUser.password);
     if(!passwordHash)
     {
         throw new Error ("Password didn't matched");
     }
+    const hashedPassword = await bcryptPassword(newPassword);
     await prisma.registration.update({
         where: {
             email
         },
         data: {
-            password: await bcrypt.hash(newPassword, saltRounds)
+            // password: await bcrypt.hash(newPassword, saltRounds)
+            password: hashedPassword
         }
     });
     return true;

@@ -4,37 +4,45 @@ import { JwtPayload } from "jsonwebtoken";
 import { PrismaClient } from "@prisma/client"; 
 const prisma = new PrismaClient();
 
-export const userValidation = () => {
-    return async (req: Request, _res: Response, next: NextFunction) => {
-        try{
-            const token = req?.headers?.authorization;
-            if(!token)
-            {
-                throw new Error ("Authentication is required");
+export const isValidUser = (inputRole: string[], userRole: string) => {
+    console.log(inputRole, "inputRole");
+    console.log(userRole, "userRole");
+    return inputRole.includes(userRole);
+};
+
+export const userValidation = (roles: string[]) => async (req: Request, _res: Response, next: NextFunction): Promise<any> => {
+    try{
+        const token = req.headers.authorization?.split(' ')[1];
+        console.log(token, "TOKEN");
+        const decodedToken = verifyToken(token ? token : "") as JwtPayload;
+        const { email } = decodedToken;
+        const userData = await prisma.registration.findUnique({
+            where: {
+                email
             }
-            const bearerHeader = token.split("Bearer ")[1];
-            const { payload }  = verifyToken(bearerHeader) as JwtPayload;
-            if(!payload)
-            {
-                throw new Error ("Payload not available!");
-            }
-            const { email } = payload;
-            const user = await prisma.registration.findUnique({
-                where: {
-                    email: email
-                }
-            });
-            if(!user)
-            {
-                throw new Error ("Email Not Found!");
-            }
-            (req as any).currentUser = user.id;
-            (req as any).currentRole = user.roles;
-            next();
-        }
-        catch(error)
+        });
+        console.log(userData, "User Data")
+        if(!userData)
         {
-            next(error);
+            throw new Error ("User Not Found!");
         }
-    };
+        (req as any).userId = userData.id;
+        (req as any).userRole = userData.roles;
+        console.log(userData.roles, "Role user")
+        const checkRole = isValidUser(roles, userData.roles);
+        console.log(checkRole, "Check role")
+        if(!checkRole)
+        {
+            throw new Error ("Role is invalid!");
+        }
+        // res.json({
+        //     checkRole
+        // });
+
+        next();
+    }
+    catch(error)
+    {
+        next(error);
+    }
 };

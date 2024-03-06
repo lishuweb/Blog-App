@@ -2,7 +2,7 @@ import express, {NextFunction, Request, Response} from 'express';
 const router = express.Router();
 import userController from './user.controller';
 import multer from 'multer';
-import { userSchemaPostValidator } from '../../middleware/userSchemaValidator';
+import { updateUserSchemaValidator, userSchemaPostValidator } from '../../middleware/userSchemaValidator';
 import { userValidation } from '../../utils/validation';
 
 const storage = multer.diskStorage({
@@ -36,15 +36,15 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-router.post('/', upload.single("image"), userSchemaPostValidator, userValidation(["admin"]), async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', upload.single("image"), userSchemaPostValidator, userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
-        req.body.images = req.file;
-        req.body.createdBy = (req as any).currentUser;
-        req.body.updatedBy = (req as any).currentUser;
+        req.body.image = req.file?.filename;
+        req.body.createdBy = (req as any).userId;
+        req.body.currentRole = (req as any).userRole;
         const response = await userController.userCreate(req.body);
         res.status(200).json({
             data: response,
-            message: "Success"
+            message: "User Created Successfully"
         });
     }
     catch(error)
@@ -53,7 +53,83 @@ router.post('/', upload.single("image"), userSchemaPostValidator, userValidation
     }
 });
 
+router.put('/:id', upload.single("image"), updateUserSchemaValidator, userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const id = parseInt(req.params.id);
+        req.body.image = req.file?.filename;
+        req.body.createdBy = (req as any).userId;
+        req.body.updatedBy = (req as any).userId;
+        req.body.currentRole = (req as any).userRole;
+        const response = await userController.userUpdate(id, req.body);
+        res.status(200).json({
+            data: response,
+            message: "User Updated Successfully"
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
 
+router.put('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const id = parseInt(req.params.id);
+        const response = await userController.userBlock(id, req.body);
+        res.status(200).json({
+            data: response,
+            message: "User is Archived!"
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
+router.delete('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const id = parseInt(req.params.id);
+        console.log(id, "ID");
+        const response = await userController.userDelete(id);
+        res.status(200).json({
+            data: response,
+            message: "User Deleted Successfully"
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
+router.get('/activeUsers', userValidation(["ADMIN"]), async (_req: Request, res: Response, next: NextFunction) => {
+    try{
+        const response = await userController.activeUsers();
+        res.status(200).json({
+            message: "Active Users",
+            data: response,
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
+router.get('/archiveUsers', userValidation(["ADMIN"]), async (_req: Request, res: Response, next: NextFunction) => {
+    try{
+        const response = await userController.archiveUsers();
+        res.status(200).json({
+            message: "Archive Users",
+            data: response
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
 
 export default router;
 

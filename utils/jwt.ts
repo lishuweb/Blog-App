@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import * as dotenv from "dotenv";
+// import { NextFunction, Request, Response } from 'express';
 dotenv.config();
 
 export const generateToken = (userData: any) => {
@@ -7,7 +8,8 @@ export const generateToken = (userData: any) => {
     {
         throw new Error ("Access Token Secret is not defined.")
     }
-    return jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1800s' });
+    const accessToken = jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET);
+    return accessToken;
 };
 
 export const verifyToken = (token: string) => {
