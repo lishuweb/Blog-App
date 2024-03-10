@@ -3,7 +3,7 @@ const router = express.Router();
 import blogController from './blog.controller';
 import { Blog } from './blog.type';
 import { blogSchemaPostValidator, updateBlogSchemaValidator} from '../../middleware/blogSchemaValidator'; 
-import { tokenExtractor, userExtractor } from '../../utils/jwt';
+import { tokenExtractor } from '../../utils/jwt';
 
 router.get('/', async(_req: Request, res: Response): Promise<Response<Blog[]>>=> {
     const blogDetails = await blogController.blogData();
@@ -17,7 +17,7 @@ router.get('/:id', tokenExtractor, async(req: Request, res: Response): Promise<R
     });
 });
 
-router.post('/', blogSchemaPostValidator, tokenExtractor, userExtractor, async(req: Request, res: Response, next: NextFunction) => {
+router.post('/', blogSchemaPostValidator, tokenExtractor, async(req: Request, res: Response, next: NextFunction) => {
     try{
         req.body.userId = (req as any).userId; 
         const newBlog = await blogController.blogCreate(req.body);
@@ -30,7 +30,18 @@ router.post('/', blogSchemaPostValidator, tokenExtractor, userExtractor, async(r
 });
 
 router.put('/:id', updateBlogSchemaValidator, tokenExtractor, async(req: Request, res: Response): Promise<Response<Blog>> => {
-    const newBlog = await blogController.blogUpdate(parseInt(req.params.id), req.body);
+    const id = req.body.userId;
+    const blogId = parseInt(req.params.id);
+    const blog = (await blogController.blogDataId(String(blogId))) as Blog;
+    if(!blog)
+    {
+        throw new Error ("Blog doesn't exist");
+    }
+    if(id !== blog.userId)
+    {
+        throw new Error ("This blog is not created by updating user");
+    }
+    const newBlog = await blogController.blogUpdate(blogId, req.body);
     return res.status(201).json(newBlog);
 });
 
