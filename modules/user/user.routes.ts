@@ -25,9 +25,39 @@ router.get('/', async(_req: Request, res: Response) => {
 
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const userDataById = await userController.userById(parseInt(req.params.id));
+        const id = parseInt(req.params.id);
+        const userDataById = await userController.userById(id);
         res.status(200).json({
             data: userDataById
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
+router.get('/activeUsers', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const isAdmin = (req as any).userRole;
+        const response = await userController.activeUsers(isAdmin);
+        res.status(200).json({
+            message: "Active Users",
+            data: response,
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
+router.get('/archiveUsers', userValidation(["ADMIN"]), async (_req: Request, res: Response, next: NextFunction) => {
+    try{
+        const response = await userController.archiveUsers();
+        res.status(200).json({
+            message: "Archive Users",
+            data: response
         });
     }
     catch(error)
@@ -103,33 +133,6 @@ router.delete('/:id', userValidation(["ADMIN"]), async (req: Request, res: Respo
     }
 });
 
-router.get('/activeUsers', userValidation(["ADMIN"]), async (_req: Request, res: Response, next: NextFunction) => {
-    try{
-        const response = await userController.activeUsers();
-        res.status(200).json({
-            message: "Active Users",
-            data: response,
-        });
-    }
-    catch(error)
-    {
-        next(error);
-    }
-});
-
-router.get('/archiveUsers', userValidation(["ADMIN"]), async (_req: Request, res: Response, next: NextFunction) => {
-    try{
-        const response = await userController.archiveUsers();
-        res.status(200).json({
-            message: "Archive Users",
-            data: response
-        });
-    }
-    catch(error)
-    {
-        next(error);
-    }
-});
 
 export default router;
 

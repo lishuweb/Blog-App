@@ -39,12 +39,12 @@ const userCreate = async(user: any): Promise<registration> => {
     const otpToken = generateOTP();
     const authUser = {
         email: newUser.email,
-        token: +otpToken                 //converting into string
+        token: +otpToken                            //converting into string
     };
     await prisma.auth.create({
         data: authUser,
     });
-    await mail(user.email, +otpToken);      //sending OTP
+    await mail(user.email, +otpToken);              //sending OTP
     console.log(newUser, "NEW User");
     return await prisma.registration.create({
         data: newUser,
@@ -68,7 +68,10 @@ const verifyUser = async(authUser: any) => {
     {
         throw new Error("Token is invalid");
     }
-    const validUser = foundUser.token === token;
+    const validUser = String(foundUser.token) === token;
+    console.log(typeof(foundUser.token));
+    console.log(typeof(token));
+    console.log(validUser, "Valid User");
     if(!validUser)
     {
         throw new Error("User is not valid.")
@@ -149,7 +152,7 @@ const forgotPasswordToken = async (email: string) => {
             token: Number(token)
         }
     });
-    await mail(email, token);
+    await mail(email, +token);
     return true;
 };
 
@@ -162,8 +165,9 @@ const forgotPassword = async ( email: string, password: string, token: number ):
     if(!findUser)
     {
         throw new Error("User Not Found!");
-    }
+    }console.log(typeof token);
     const isValidToken = await verifyOTP(String(token));
+    console.log(isValidToken, "Token");
     if(!isValidToken)
     {
         throw new Error("Token isnot Valid");
@@ -209,7 +213,7 @@ const changePasswordToken = async ( email: string ): Promise<Boolean> => {
             token: Number(token)
         }
     });
-    await mail(email, token);
+    await mail(email, +token);
     return true;
 };
 

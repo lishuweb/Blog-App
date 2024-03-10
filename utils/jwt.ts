@@ -1,11 +1,9 @@
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import * as dotenv from "dotenv";
-import { NextFunction, Request, Response } from 'express';
 dotenv.config();
-
-export interface TokenType {
-    token: string;
-};
+import { NextFunction, Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 export const generateToken = (userData: any) => {
     if(!process.env.ACCESS_TOKEN_SECRET)
@@ -27,7 +25,7 @@ export const verifyToken = (token: string) => {
     }
 };
 
-export const tokenExtractor = async (req: Request, res: Response, next: NextFunction): Promise<tokenType> => {
+export const tokenExtractor = async (req: Request, res: Response, next: NextFunction) => {
     if(!req.headers?.authorization)
     {
         res.status(401).json({
@@ -35,8 +33,25 @@ export const tokenExtractor = async (req: Request, res: Response, next: NextFunc
         });
     }
     const token = req.headers?.authorization?.split(" ")[1];
-    req.token = token;
+    (req as any).token = token;
+    // req.token = token;
     next();
 };
 
+export const userExtractor = async (req: Request, _res: Response, next: NextFunction) => {
+    const token = (req as any);
+    const decodedToken = verifyToken(token ? token : "") as JwtPayload;
+    const { email } = decodedToken;
+    const userData = await prisma.registration.findUnique({
+        where: {
+            email
+        }
+    });
+    if(!userData)
+    {
+        throw new Error ("User Not Found");
+    }
+    (req as any).userId = userData.id;
+    next();
+};
 
