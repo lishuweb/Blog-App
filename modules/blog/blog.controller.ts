@@ -1,26 +1,27 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import prisma from '../../DB/db.config';
 // import { Blog } from './blog.type';
 import { blog } from '@prisma/client';
 
 const blogData = async(): Promise<blog[]> => {
-    return await prisma.blog.findMany();
+const allBlog= await prisma.blog.findMany({});
+// console.log(allBlog,'allblog frim blog')
+return allBlog;
 };
 
-const blogDataId = async(id: string): Promise<blog | null> => {
+const blogDataId = async(id: number): Promise<blog | null> => {
     return await prisma.blog.findUnique({
         where: { 
-            id: Number(id), 
+            id: id, 
         },
     });
 };
 
-const blogCreate = async (blog: blog, name: string): Promise<blog> => {
-    const blogDetails = {
-        ...blog, author: name
-    }
+const blogCreate = async (blog: blog): Promise<blog> => {
+    // const blogDetails = {
+    //     data:
+    // }
     return await prisma.blog.create({
-        data: blogDetails
+        data: blog
     });
 };
 

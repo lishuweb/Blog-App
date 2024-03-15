@@ -7,11 +7,12 @@ import { tokenExtractor } from '../../middleware/tokenExtractor';
 
 router.get('/', async(_req: Request, res: Response): Promise<Response<Blog[]>>=> {
     const blogDetails = await blogController.blogData();
-    return res.status(200).json({data: blogDetails});
+    return res.status(200).json(blogDetails);
 });
 
 router.get('/:id', tokenExtractor, async(req: Request, res: Response): Promise<Response<Blog>>=> {
-    const blogById = await blogController.blogDataId(req.params.id);
+    const id = parseInt(req.params.id);
+    const blogById = await blogController.blogDataId(id);
     return res.status(200).json({
         data: blogById,
     });
@@ -20,9 +21,9 @@ router.get('/:id', tokenExtractor, async(req: Request, res: Response): Promise<R
 router.post('/', blogSchemaPostValidator, tokenExtractor, async(req: Request, res: Response, next: NextFunction) => {
     try{
         // console.log(req.body.userId, "ID");
-        const name = (req as any).userName;
-        console.log(name, "name");
-        const newBlog = await blogController.blogCreate(req.body, name);
+        // const name = (req as any).userName;
+        // console.log(name, "name");
+        const newBlog = await blogController.blogCreate(req.body);
         res.status(201).json(newBlog);
     }
     catch(err)
@@ -34,7 +35,7 @@ router.post('/', blogSchemaPostValidator, tokenExtractor, async(req: Request, re
 router.put('/:id', updateBlogSchemaValidator, tokenExtractor, async(req: Request, res: Response): Promise<Response<Blog>> => {
     const id = req.body.userId;
     const blogId = parseInt(req.params.id);
-    const blog = (await blogController.blogDataId(String(blogId))) as Blog;
+    const blog = (await blogController.blogDataId(blogId)) as Blog;
     if(!blog)
     {
         throw new Error ("Blog doesn't exist");

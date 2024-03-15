@@ -1,12 +1,46 @@
-import { PrismaClient, registration } from "@prisma/client"; 
-const prisma = new PrismaClient();
+import prisma from "../../DB/db.config";
 import { Registration } from "./user.type"; 
+import { registration } from "@prisma/client";
 // import bcrypt from 'bcrypt';
 import { bcryptPassword } from "../../utils/bcrypt";
 
-const userData = async(): Promise<Registration[]> => {
-    const response = await prisma.registration.findMany();
+const userData = async(): Promise<registration[]> => {
+    const response = await prisma.registration.findMany({});
     return JSON.parse(JSON.stringify(response));
+    // return response;
+};
+
+const activeUsers = async (isAdmin: boolean): Promise<registration[]> => {
+    console.log(isAdmin, 'isAdmin');
+    if(isAdmin)
+    {
+        return await prisma.registration.findMany({
+            where: {
+                isEmailVerified: true,
+                isActive: true
+            },
+        });
+    }
+    else 
+    {
+        throw new Error ("Not Valid User!");
+    }
+};
+
+const archiveUsers = async (isAdmin: boolean): Promise<registration[]> => {
+    console.log(isAdmin, 'isAdmin');
+    if(isAdmin)
+    {
+        return await prisma.registration.findMany({
+            where: {
+                isArchive: true
+            }
+        });
+    }
+    else 
+    {
+        throw new Error ("Not Valid User!");
+    }
 };
 
 const userById = async(id: number): Promise<Registration> => {
@@ -71,51 +105,6 @@ export const userDelete = async (id: number) => {
     return await prisma.registration.delete({
         where: {
             id: id
-        }
-    });
-};
-
-const activeUsers = async (isAdmin: boolean) => {
-    console.log(isAdmin, 'isAdmin');
-    if(isAdmin)
-    {
-        return await prisma.registration.findMany({
-            // where: {
-            //     isEmailVerified: true,
-            //     isActive: true
-            // },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                roles: true,
-                image: true,
-                isEmailVerified: true,
-                isActive: true,
-                createdBy: true
-            }
-        });
-    }
-    else 
-    {
-        throw new Error ("Not Valid User!");
-    }
-};
-
-const archiveUsers = async () => {
-    return await prisma.registration.findMany({
-        where: {
-            isArchive: true
-        },
-        select: {
-            email: true,
-            name: true,
-            roles: true,
-            image: true,
-            isEmailVerified: true,
-            isActive: true,
-            isArchive: true,
-            createdBy: true
         }
     });
 };
