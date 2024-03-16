@@ -22,10 +22,15 @@ describe('User Controller Test Cases', () => {
         it('provides lists of users', async () => {
             jest.clearAllMocks();
             jest.spyOn(prisma.registration, "findMany").mockResolvedValue(userLists);
-            const userDetails = await userController.userData();
+            const isAdmin = true;
+            const userDetails = await userController.userData(isAdmin);
             // console.log(userDetails, "User Details");
             expect(userDetails).toBeDefined();
             expect(userDetails).toEqual(userLists);
+        });
+        it('Throws an error if user is not admin', async () => {
+            const isAdmin = false;
+            await expect(userController.userData(isAdmin)).rejects.toThrow("You do not have permission to perform this action.");
         });
     });
 
@@ -34,9 +39,15 @@ describe('User Controller Test Cases', () => {
             jest.clearAllMocks();
             jest.spyOn(prisma.registration, "findUnique").mockResolvedValue(userGet);
             const id = 2;
-            const userDetails = await userController.userById(id);
+            const isAdmin = true;
+            const userDetails = await userController.userById(id, isAdmin);
             expect(userDetails).toBeDefined();
             expect(userDetails).toEqual(userGet);
+        });
+        it('Throws an error if user is not admin', async () => {
+            const id = 2;
+            const isAdmin = false;
+            await expect(userController.userById(id,isAdmin)).rejects.toThrow("You do not have permission to perform this action.");
         });
     });
 
@@ -44,7 +55,8 @@ describe('User Controller Test Cases', () => {
         it('creates a new user', async () => {
             jest.clearAllMocks();
             jest.spyOn(prisma.registration, "create").mockResolvedValue(userGet);
-            const createUser = await userController.userCreate(userToPost);
+            const isAdmin = true;
+            const createUser = await userController.userCreate(isAdmin, userToPost);
             // console.log(createUser, "Create user test")
             expect(bcrypt.hash).toHaveBeenCalledWith(userToPost.password, 10);
             expect(createUser.password).toEqual(userGet.password);
@@ -54,6 +66,10 @@ describe('User Controller Test Cases', () => {
             // expect(prisma.registration.create).toHaveBeenCalledWith({
             //     data: newUser
             // });
+        });
+        it('Throws error if user is not an admin', async () => {
+            const isAdmin = false;
+            await expect(userController.userCreate(isAdmin, userToPost)).rejects.toThrow("You do not have permission to perform this action bye!"); 
         });
     });
 
@@ -74,8 +90,9 @@ describe('User Controller Test Cases', () => {
                 updatedBy: userGet.updatedBy,
                 currentRole: userGet.currentRole
             };
+            const isAdmin = true;
             jest.spyOn(prisma.registration, 'update').mockResolvedValue(userUpdateData);
-            const updatedUser = await userController.userUpdate(userGet.id, userUpdateData);
+            const updatedUser = await userController.userUpdate(userGet.id, userUpdateData, isAdmin);
             expect(updatedUser).toEqual(userUpdateData);
             expect(prisma.registration.update).toHaveBeenCalledWith({
                 where: {
@@ -84,24 +101,51 @@ describe('User Controller Test Cases', () => {
                 data: userUpdateData
             });
         });
+        it('Throws error it user is not an admin', async () => {
+            const isAdmin = userToPost.roles === "ADMIN" ? true : false;
+            const id = userGet.id;
+            const userUpdateData = {
+                id: userGet.id,
+                name: "meme",
+                email: 'memes@gmail.com',
+                password: userGet.password,
+                image: userGet.image,
+                roles: userGet.roles,
+                isEmailVerified: userGet.isEmailVerified,
+                isActive: userGet.isActive,
+                isArchive: userGet.isArchive,
+                createdBy: userGet.createdBy,
+                updatedBy: userGet.updatedBy,
+                currentRole: userGet.currentRole
+            };
+            await expect(userController.userUpdate(id, userUpdateData, isAdmin)).rejects.toThrow("You do not have permission to perform this action.");
+        })
     });
 
     describe('Archive user', () => {
         it('Archives a paricular user through its id', async () => {
             jest.clearAllMocks();
-            const blockData = {
-                isArchive: true
+            const data = {
+                isArchive : true
             };
-
-            jest.spyOn(prisma.registration, "update").mockResolvedValue(blockData as registration);
-            const blockUser = await userController.userBlock(userGet.id, blockData);
-            expect(blockUser).toEqual(blockData);
+            const isAdmin = true;
+            jest.spyOn(prisma.registration, "update").mockResolvedValue(data as registration);
+            const blockUser = await userController.userBlock(userGet.id, isAdmin, data);
+            expect(blockUser).toEqual(data);
             expect(prisma.registration.update).toHaveBeenCalledWith({
                 where: {
                   id:  userGet.id
                 },
-                data: blockData
-              });
+                data: data
+            });
+        });
+        it('Throws error it user is not an admin', async () => {
+            const isAdmin = false;
+            const id = userGet.id;
+            const data = {
+                isArchive : true
+            };
+            await expect(userController.userBlock(id, isAdmin, data)).rejects.toThrow("You don't have permission to perform this action.");
         });
     });
 
@@ -109,14 +153,20 @@ describe('User Controller Test Cases', () => {
         it('Deletes a particular user through its id', async () => {
             jest.clearAllMocks();
             const id = userGet.id;
+            const isAdmin = true;
             jest.spyOn(prisma.registration, "delete").mockResolvedValue(userGet);
-            const deleteUser = await userController.userDelete(id);
+            const deleteUser = await userController.userDelete(id, isAdmin);
             expect(deleteUser).toEqual(userGet);
             expect(prisma.registration.delete).toHaveBeenCalledWith({
                 where: {
                     id: userGet.id
                 }
             });
+        });
+        it('Throws error if isAdmin is false', async () => {
+            const isAdmin = false;
+            const id = userGet.id;
+            await expect(userController.userDelete(id, isAdmin)).rejects.toThrow("You do not have permission to perform this action.");
         });
     });
 

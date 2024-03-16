@@ -16,9 +16,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-router.get('/', async(_req: Request, res: Response) => {
-    const userDetails = await userController.userData();
-    res.status(200).json(userDetails);
+router.get('/', userValidation(["ADMIN"]), async(req: Request, res: Response, next: NextFunction) => {
+    try{
+        const isAdmin = (req as any).userRole;
+        const userDetails = await userController.userData(isAdmin);
+        res.status(200).json(userDetails);
+    }
+    catch(error)
+    {
+        next(error);
+    }
 });
 
 router.get('/activeUsers', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
@@ -45,10 +52,11 @@ router.get('/archiveUsers', userValidation(["ADMIN"]), async (req: Request, res:
     }
 });
 
-router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+router.get('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
         const id = parseInt(req.params.id);
-        const userDataById = await userController.userById(id);
+        const isAdmin = (req as any).userRole;
+        const userDataById = await userController.userById(id, isAdmin);
         res.status(200).json({
             data: userDataById
         });
@@ -64,7 +72,8 @@ router.post('/', upload.single("image"), userSchemaPostValidator, userValidation
         req.body.image = req.file?.filename;
         req.body.createdBy = (req as any).userId;
         req.body.currentRole = (req as any).userRole;
-        const response = await userController.userCreate(req.body);
+        const isAdmin = (req as any).userRole;
+        const response = await userController.userCreate(isAdmin, req.body);
         res.status(200).json(response);
     }
     catch(error)
@@ -80,11 +89,9 @@ router.put('/:id', upload.single("image"), updateUserSchemaValidator, userValida
         req.body.createdBy = (req as any).userId;
         req.body.updatedBy = (req as any).userId;
         req.body.currentRole = (req as any).userRole;
-        const response = await userController.userUpdate(id, req.body);
-        res.status(200).json({
-            data: response,
-            message: "User Updated Successfully"
-        });
+        const isAdmin = (req as any).userRole;
+        const response = await userController.userUpdate(id, req.body, isAdmin);
+        res.status(200).json(response);
     }
     catch(error)
     {
@@ -95,11 +102,9 @@ router.put('/:id', upload.single("image"), updateUserSchemaValidator, userValida
 router.put('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
         const id = parseInt(req.params.id);
-        const response = await userController.userBlock(id, req.body);
-        res.status(200).json({
-            data: response,
-            message: "User is Archived!"
-        });
+        const isAdmin = (req as any).userRole;
+        const response = await userController.userBlock(id, isAdmin, req.body);
+        res.status(200).json(response);
     }
     catch(error)
     {
@@ -110,8 +115,9 @@ router.put('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response
 router.delete('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
         const id = parseInt(req.params.id);
+        const isAdmin = (req as any).userRole;
         console.log(id, "ID");
-        const response = await userController.userDelete(id);
+        const response = await userController.userDelete(id, isAdmin);
         res.status(200).json({
             data: response,
             message: "User Deleted Successfully"
