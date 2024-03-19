@@ -213,7 +213,7 @@ describe('User Controller Test Cases', () => {
             jest.spyOn(prisma.registration, "findMany").mockResolvedValue(archiveData as registration[]);
             const isAdmin = true;
             const archiveUsers = await userController.archiveUsers(isAdmin);
-            console.log(archiveUsers, "Archive Users");
+            // console.log(archiveUsers, "Archive Users");
             expect(archiveUsers).toEqual(archiveData);
             expect(prisma.registration.findMany).toHaveBeenCalledWith({
                 where: {

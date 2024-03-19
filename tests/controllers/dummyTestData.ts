@@ -37,18 +37,23 @@ export const blogLists = [
 ];
 
 export const userGet = {
-    id: 20,
-    name: "Myselff",
-    email: "me@gmail.com",
+    id: 40,
+    name: "Vedona",
+    email: "vedona6586@dovesilo.com",
     password: "hashedPassword",
-    image: "image.jpg",
+    image: "1710742896877-5472842.jpg",
     roles: "USER" as Role,
-    isEmailVerified: true,
-    isActive: true,
+    isEmailVerified: false,
+    isActive: false,
     isArchive: false,
     createdBy: 0,
     updatedBy: 0,
     currentRole: "USER" as Role
+};
+
+export const authUser = {
+    email: userGet.email,
+    token: 987654
 };
 
 export const userToPost = {
@@ -136,3 +141,4 @@ export const archiveUserLists = [
         currentRole: "USER" as Role,
     }
 ];
+

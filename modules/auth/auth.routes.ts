@@ -23,9 +23,7 @@ router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Req
             req.body.image = req.file.filename;
         }
         const userCreate = await authControllers.userCreate(req.body);
-        res.status(201).json({
-            data: userCreate
-        });
+        res.status(201).json(userCreate);
     }
     catch(error)
     {
@@ -36,12 +34,9 @@ router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Req
 router.post('/verifyUser', authVerifyValidator, async(req: Request, res: Response, next: NextFunction) => {
     try{
         const verifyUser = await authControllers.verifyUser(req.body);
-        console.log(req.body, 'Request Body');
-        console.log(verifyUser, "VerigyUser");
-        res.status(200).json({
-            data: verifyUser,
-            message: "User Verified!"
-        });
+        // console.log(req.body, 'Request Body');
+        // console.log(verifyUser, "VerigyUser");
+        res.status(200).json(verifyUser);
     }
     catch(error)
     {
