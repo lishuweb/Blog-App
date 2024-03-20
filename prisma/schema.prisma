@@ -17,8 +17,8 @@ model blog {
   author            String
   likes             Int
   url               String        @db.VarChar(255)
-  author            registration  @relation(fields: [authorId, references: [id]])
-  authorId          Int           @default(1)
+  userId            Int           @default(2)
+  blogCreator       registration  @relation(fields: [userId], references: [id])
 }
 
 model registration {

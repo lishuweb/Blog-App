@@ -10,7 +10,8 @@ export interface Registration {
     isArchive?: boolean,
     createdBy?: number,
     updatedBy?: number,
-    currentRole?: string
+    currentRole?: string,
+    blogs: number[]
 };
 
 export enum Role {
