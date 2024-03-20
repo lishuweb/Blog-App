@@ -9,7 +9,7 @@ export const generateToken = (userData: any) => {
     }
     const accessToken = jwt.sign(userData, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: '3m'
-    });
+    }); 
     return accessToken;
 };
 

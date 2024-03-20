@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client"; 
-const prisma = new PrismaClient();
+import prisma from "../../DB/db.config";
 import { bcryptPassword, comparePassword } from "../../utils/bcrypt";
 import { generateOTP } from "../../utils/otp";
 import { mail } from "../../services/mail";
@@ -54,7 +53,7 @@ const userCreate = async(user: any): Promise<registration> => {
 
 const verifyUser = async(authUser: any) => {
     const {email, token} = authUser;
-    console.log(authUser, "Auth Usre");
+    // console.log(authUser, "Auth Usre");
     const foundUser = await prisma.auth.findUnique({
         where: {
             email
@@ -64,18 +63,18 @@ const verifyUser = async(authUser: any) => {
     {
         throw new Error("Auth User Not Found, Do Register First");
     }
-    const isValidToken = verifyOTP(String(token));
+    const isValidToken = await verifyOTP(String(token));
     if(!isValidToken)
     {
-        throw new Error("Token is invalid");
+        throw new Error("Token doesnot matches.");
     }
     const validUser = String(foundUser.token) === token;
-    console.log(typeof(foundUser.token));
-    console.log(typeof(token));
-    console.log(validUser, "Valid User");
+    // console.log(typeof(foundUser.token));
+    // console.log(typeof(token));
+    // console.log(validUser, "Valid User");
     if(!validUser)
     {
-        throw new Error("User is not valid.")
+        throw new Error("Token is not valid.")
     }
     await prisma.registration.update({
         where: {
@@ -100,14 +99,14 @@ const userLogin = async (email: string, password: string) =>  {
             email
         }
     });
-    console.log(userCheck, "User Check")
+    // console.log(userCheck, "User Check")
     if(!userCheck)
     {
-        throw new Error("User doesn't exist, do register first!");
+        throw new Error("User does not exist, do register first!");
     }
     if(!userCheck.isEmailVerified)
     {
-        throw new Error("Email isn't verified, please verify your email first!");
+        throw new Error("Email is not verified, please verify your email first!");
     }
     if(!userCheck.isActive)
     {
@@ -123,11 +122,11 @@ const userLogin = async (email: string, password: string) =>  {
         }
         const accessToken = generateToken(userForToken);
 
-        console.log(accessToken, "Access Token");
+        // console.log(accessToken, "Access Token");
 
         const refreshToken = generateRefreshToken(userForToken);
 
-        console.log(refreshToken, "Refresh Token");
+        // console.log(refreshToken, "Refresh Token");
       
         
         return {
@@ -139,7 +138,7 @@ const userLogin = async (email: string, password: string) =>  {
     }
     else 
     {
-        throw new Error("Password didn't matched!");
+        throw new Error("Password did not matched!");
     }
 };
 
@@ -176,7 +175,8 @@ const forgotPassword = async ( email: string, password: string, token: number ):
     if(!findUser)
     {
         throw new Error("User Not Found!");
-    }console.log(typeof token);
+    }
+    console.log(typeof token);
     const isValidToken = await verifyOTP(String(token));
     console.log(isValidToken, "Token");
     if(!isValidToken)
@@ -249,7 +249,7 @@ const changePassword = async ( email: string, oldPassword: string, newPassword: 
     const tokenCheck = userCheck.token === token;
     if(!tokenCheck)
     {
-        throw new Error ("Email is invalid!");
+        throw new Error ("Token expired!");
     }
     const registerUser = await prisma.registration.findUnique({
         where: {
