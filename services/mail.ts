@@ -10,7 +10,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-export const mail = async (email: any, otpToken: any) => {
+export const mail = async (email: string, otpToken: number) => {
     await transporter.sendMail({
         from: process.env.GMAIL_EMAIL,
         to: email,

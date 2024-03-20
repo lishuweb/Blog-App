@@ -2,8 +2,8 @@ import express, {NextFunction, Request, Response} from 'express';
 const router = express.Router();
 import userController from './user.controller';
 import multer from 'multer';
-import { userSchemaPostValidator } from '../../middleware/userSchemaValidator';
-// import { userSchema } from './user.validator';
+import { updateUserSchemaValidator, userSchemaPostValidator } from '../../middleware/userSchemaValidator';
+import { userValidation } from '../../utils/validation';
 
 const storage = multer.diskStorage({
     destination: function (_req, _file, cb) {
@@ -25,38 +25,25 @@ router.get('/', async(_req: Request, res: Response) => {
 
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const userDataById = await userController.userById(parseInt(req.params.id));
+        const id = parseInt(req.params.id);
+        const userDataById = await userController.userById(id);
         res.status(200).json({
             data: userDataById
         });
     }
     catch(error)
     {
-router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Request, res: Response, next: NextFunction) => {
-    try{
-        if(req?.file)
-        {
-            req.body.image = req.file.filename;
-        }
-        const userCreate = await userController.userCreate(req.body);
-        res.status(201).json({
-            data: userCreate
-        });
-    }
-    catch(error)
-    {
         next(error);
     }
 });
 
-router.post('/verifyUser', async(req: Request, res: Response, next: NextFunction) => {
+router.get('/activeUsers', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const verifyUser = await userController.verifyUser(req.body);
-        console.log(req.body, 'Request Body');
-        console.log(verifyUser, "VerigyUser");
+        const isAdmin = (req as any).userRole;
+        const response = await userController.activeUsers(isAdmin);
         res.status(200).json({
-            data: verifyUser,
-            message: "User Verified!"
+            message: "Active Users",
+            data: response,
         });
     }
     catch(error)
@@ -65,34 +52,12 @@ router.post('/verifyUser', async(req: Request, res: Response, next: NextFunction
     }
 });
 
-router.post('/login', async(req: Request, res: Response, next: NextFunction) => {
+router.get('/archiveUsers', userValidation(["ADMIN"]), async (_req: Request, res: Response, next: NextFunction) => {
     try{
-        const { email, password } = req.body;
-        if(!email)
-        {
-            throw new Error("Email field is required!");
-        }
-        if(!password)
-        {
-            throw new Error("Password field is required!")
-        }
-        const loginData = await userController.userLogin(email, password);
+        const response = await userController.archiveUsers();
         res.status(200).json({
-            message: "User logged in successfully",
-            data: loginData 
-        });        
-    }
-    catch(error)
-    {
-        next(error);
-    }
-});
-
-router.put('/:id', async(req: Request, res: Response, next: NextFunction) => {                      //For Api Test
-    try{
-        const userUpdate = await userController.userUpdate(parseInt(req.params.id),req.body);
-        res.status(201).json({
-            data: userUpdate
+            message: "Archive Users",
+            data: response
         });
     }
     catch(error)
@@ -101,12 +66,15 @@ router.put('/:id', async(req: Request, res: Response, next: NextFunction) => {  
     }
 });
 
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {                  //For Api Test
+router.post('/', upload.single("image"), userSchemaPostValidator, userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const userDelete = await userController.userDelete(parseInt(req.params.id));
-        res.status(201).json({
-            message: "User deleted successfully",
-            userDelete
+        req.body.image = req.file?.filename;
+        req.body.createdBy = (req as any).userId;
+        req.body.currentRole = (req as any).userRole;
+        const response = await userController.userCreate(req.body);
+        res.status(200).json({
+            data: response,
+            message: "User Created Successfully"
         });
     }
     catch(error)
@@ -114,6 +82,57 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
         next(error);
     }
 });
+
+router.put('/:id', upload.single("image"), updateUserSchemaValidator, userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const id = parseInt(req.params.id);
+        req.body.image = req.file?.filename;
+        req.body.createdBy = (req as any).userId;
+        req.body.updatedBy = (req as any).userId;
+        req.body.currentRole = (req as any).userRole;
+        const response = await userController.userUpdate(id, req.body);
+        res.status(200).json({
+            data: response,
+            message: "User Updated Successfully"
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
+router.put('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const id = parseInt(req.params.id);
+        const response = await userController.userBlock(id, req.body);
+        res.status(200).json({
+            data: response,
+            message: "User is Archived!"
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
+router.delete('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const id = parseInt(req.params.id);
+        console.log(id, "ID");
+        const response = await userController.userDelete(id);
+        res.status(200).json({
+            data: response,
+            message: "User Deleted Successfully"
+        });
+    }
+    catch(error)
+    {
+        next(error);
+    }
+});
+
 
 export default router;
 

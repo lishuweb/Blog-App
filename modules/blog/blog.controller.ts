@@ -1,12 +1,13 @@
 import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
-import { Blog } from './blog.type';
+// import { Blog } from './blog.type';
+import { blog } from '@prisma/client';
 
-const blogData = async(): Promise<Blog[]> => {
+const blogData = async(): Promise<blog[]> => {
     return await prisma.blog.findMany();
 };
 
-const blogDataId = async(id: string): Promise<Blog | null> => {
+const blogDataId = async(id: string): Promise<blog | null> => {
     return await prisma.blog.findUnique({
         where: { 
             id: Number(id), 
@@ -14,22 +15,25 @@ const blogDataId = async(id: string): Promise<Blog | null> => {
     });
 };
 
-const blogCreate = async (blog: Blog): Promise<Blog> => {
+const blogCreate = async (blog: blog, name: string): Promise<blog> => {
+    const blogDetails = {
+        ...blog, author: name
+    }
     return await prisma.blog.create({
-        data: blog
+        data: blogDetails
     });
 };
 
-const blogUpdate = async(id: number, updateBlog: Blog ): Promise<Blog | null>=>{
+const blogUpdate = async(id: number, updateBlog: blog ): Promise<blog | null>=>{
     return await prisma.blog.update({
         where: {
             id: id     
         },
-        data: updateBlog
+        data: { ...updateBlog }
     });
 };
 
-const blogDelete = async( id : number ): Promise<Blog> => {
+const blogDelete = async( id : number ): Promise<blog> => {
     return await prisma.blog.delete({
         where: {
             id: id

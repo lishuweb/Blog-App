@@ -11,12 +11,14 @@ datasource db {
 }
 
 model blog {
-  id                Int       @id @default(autoincrement())
-  createdAt         DateTime  @default(now())
-  title             String    @db.VarChar(255)
+  id                Int           @id @default(autoincrement())
+  createdAt         DateTime      @default(now())
+  title             String        @db.VarChar(255)
   author            String
   likes             Int
-  url               String    @db.VarChar(255)
+  url               String        @db.VarChar(255)
+  userId            Int           @default(2)
+  blogCreator       registration  @relation(fields: [userId], references: [id])
 }
 
 model registration {
@@ -29,6 +31,10 @@ model registration {
   isEmailVerified   Boolean   @default(false)
   isActive          Boolean   @default(false)
   isArchive         Boolean   @default(false)
+  createdBy         Int       @default(0) 
+  updatedBy         Int       @default(0)
+  currentRole       Role      @default(USER)
+  blogs             blog[]    
 }
 
 enum Role {
