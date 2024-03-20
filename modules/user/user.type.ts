@@ -7,7 +7,11 @@ export interface Registration {
     image: string
     isEmailVerified?: boolean,
     isActive?: boolean,
-    isArchive?: boolean
+    isArchive?: boolean,
+    createdBy?: number,
+    updatedBy?: number,
+    currentRole?: string,
+    blogs: number[]
 };
 
 export enum Role {

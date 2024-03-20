@@ -2,8 +2,8 @@ import express, {NextFunction, Request, Response} from 'express';
 const router = express.Router();
 import userController from './user.controller';
 import multer from 'multer';
-import { userSchemaPostValidator } from '../../middleware/userSchemaValidator';
-// import { userSchema } from './user.validator';
+import { updateUserSchemaValidator, userSchemaPostValidator } from '../../middleware/userSchemaValidator';
+import { userValidation } from '../../utils/validation';
 
 const storage = multer.diskStorage({
     destination: function (_req, _file, cb) {
@@ -25,7 +25,8 @@ router.get('/', async(_req: Request, res: Response) => {
 
 router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const userDataById = await userController.userById(parseInt(req.params.id));
+        const id = parseInt(req.params.id);
+        const userDataById = await userController.userById(id);
         res.status(200).json({
             data: userDataById
         });
@@ -36,15 +37,13 @@ router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Request, res: Response, next: NextFunction) => {
+router.get('/activeUsers', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
-        if(req?.file)
-        {
-            req.body.image = req.file.filename;
-        }
-        const userCreate = await userController.userCreate(req.body);
-        res.status(201).json({
-            data: userCreate
+        const isAdmin = (req as any).userRole;
+        const response = await userController.activeUsers(isAdmin);
+        res.status(200).json({
+            message: "Active Users",
+            data: response,
         });
     }
     catch(error)
@@ -53,54 +52,11 @@ router.post('/', upload.single("image"), userSchemaPostValidator, async(req: Req
     }
 });
 
-router.post('/verifyUser', async(req: Request, res: Response, next: NextFunction) => {
+router.get('/archiveUsers', userValidation(["ADMIN"]), async (_req: Request, res: Response, next: NextFunction) => {
     try{
-        const verifyUser = await userController.verifyUser(req.body);
-        console.log(req.body, 'Request Body');
-        console.log(verifyUser, "VerigyUser");
+        const response = await userController.archiveUsers();
         res.status(200).json({
-            data: verifyUser,
-            message: "User Verified!"
-        });
-    }
-    catch(error)
-    {
-        next(error);
-    }
-});
-
-router.post('/login', async(req: Request, res: Response, next: NextFunction) => {
-    try{
-        const { email, password } = req.body;
-        if(!email)
-        {
-            throw new Error("Email field is required!");
-        }
-        if(!password)
-        {
-            throw new Error("Password field is required!")
-        }
-        const loginData = await userController.userLogin(email, password);
-        res.status(200).json({
-            message: "User logged in successfully",
-            data: loginData 
-        });        
-    }
-    catch(error)
-    {
-        next(error);
-    }
-});
-
-router.post('/forgotpasswordtoken', async (req: Request, res: Response, next: NextFunction) => {
-    try{
-        const {email} = req.body;
-        if(!email)
-        {
-            throw new Error("Email field is missing!");
-        }
-        const response = await userController.forgotPasswordToken(email);
-        res.status(201).json({
+            message: "Archive Users",
             data: response
         });
     }
@@ -110,12 +66,15 @@ router.post('/forgotpasswordtoken', async (req: Request, res: Response, next: Ne
     }
 });
 
-router.post('/forgotpassword', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', upload.single("image"), userSchemaPostValidator, userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const { email, password, token } = req.body;
-        const data = await userController.forgotPassword( email, password, token );
-        res.status(201).json({
-            data: data
+        req.body.image = req.file?.filename;
+        req.body.createdBy = (req as any).userId;
+        req.body.currentRole = (req as any).userRole;
+        const response = await userController.userCreate(req.body);
+        res.status(200).json({
+            data: response,
+            message: "User Created Successfully"
         });
     }
     catch(error)
@@ -124,16 +83,17 @@ router.post('/forgotpassword', async (req: Request, res: Response, next: NextFun
     }
 });
 
-router.post('/changepasswordtoken', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', upload.single("image"), updateUserSchemaValidator, userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const { email } = req.body;
-        if(!email)
-        {
-            throw new Error ("Email field is required!");
-        }
-        const data = await userController.changePasswordToken( email );
-        res.status(201).json({
-            data: data
+        const id = parseInt(req.params.id);
+        req.body.image = req.file?.filename;
+        req.body.createdBy = (req as any).userId;
+        req.body.updatedBy = (req as any).userId;
+        req.body.currentRole = (req as any).userRole;
+        const response = await userController.userUpdate(id, req.body);
+        res.status(200).json({
+            data: response,
+            message: "User Updated Successfully"
         });
     }
     catch(error)
@@ -142,12 +102,13 @@ router.post('/changepasswordtoken', async (req: Request, res: Response, next: Ne
     }
 });
 
-router.put('/changepassword', async (req: Request, res: Response, next: NextFunction) => {
+router.put('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const { email, oldPassword, newPassword, token } = req.body;
-        const data = await userController.changePassword( email, oldPassword, newPassword, token );
-        res.status(201).json({
-            data: data
+        const id = parseInt(req.params.id);
+        const response = await userController.userBlock(id, req.body);
+        res.status(200).json({
+            data: response,
+            message: "User is Archived!"
         });
     }
     catch(error)
@@ -156,13 +117,14 @@ router.put('/changepassword', async (req: Request, res: Response, next: NextFunc
     }
 });
 
-
-router.delete('/:id', async (req: Request, res: Response, next: NextFunction) => {                  //For Api Test
+router.delete('/:id', userValidation(["ADMIN"]), async (req: Request, res: Response, next: NextFunction) => {
     try{
-        const userDelete = await userController.userDelete(parseInt(req.params.id));
-        res.status(201).json({
-            message: "User deleted successfully",
-            userDelete
+        const id = parseInt(req.params.id);
+        console.log(id, "ID");
+        const response = await userController.userDelete(id);
+        res.status(200).json({
+            data: response,
+            message: "User Deleted Successfully"
         });
     }
     catch(error)
@@ -170,6 +132,7 @@ router.delete('/:id', async (req: Request, res: Response, next: NextFunction) =>
         next(error);
     }
 });
+
 
 export default router;
 

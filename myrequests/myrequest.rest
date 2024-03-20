@@ -55,12 +55,15 @@ Content-Type: application/json
 DELETE http://localhost:3001/api/v1/users/6
 
 ###
+DELETE http://localhost:3001/api/v1/users/10
+
+###
 POST http://localhost:3001/api/v1/users/login
 Content-Type: application/json
 
 {
     "email": "prabeshmagar.rumsan@gmail.com",
-    "password": "mememe@123"
+    "password": "prabesh@123"
 }
 
 ###
