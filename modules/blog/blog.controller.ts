@@ -3,9 +3,9 @@ import prisma from '../../DB/db.config';
 import { blog } from '@prisma/client';
 
 const blogData = async(): Promise<blog[]> => {
-const allBlog= await prisma.blog.findMany({});
-// console.log(allBlog,'allblog frim blog')
-return allBlog;
+    const allBlog= await prisma.blog.findMany({});
+    // console.log(allBlog,'allblog frim blog')
+    return allBlog;
 };
 
 const blogDataId = async(id: number): Promise<blog | null> => {
