@@ -15,9 +15,12 @@ const blogDataId = async(id: string): Promise<blog | null> => {
     });
 };
 
-const blogCreate = async (blog: blog): Promise<blog> => {
+const blogCreate = async (blog: blog, name: string): Promise<blog> => {
+    const blogDetails = {
+        ...blog, author: name
+    }
     return await prisma.blog.create({
-        data: blog
+        data: blogDetails
     });
 };
 

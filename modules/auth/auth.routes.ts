@@ -60,11 +60,24 @@ router.post('/login', async(req: Request, res: Response, next: NextFunction) => 
         {
             throw new Error("Password field is required!")
         }
-        const loginData = await authControllers.userLogin(email, password);
+        console.log(email, "email");
+        console.log(password, "password");
+        const loginData = await authControllers.userLogin(req.body.email, req.body.password);
+
         console.log(loginData, "Login Data");
+        const {userEmail, name, accessToken, refreshToken} = loginData;
+        res.cookie(
+            'jwt', refreshToken, {
+                httpOnly: true,
+                sameSite: 'none',                                           //'None' - Typescript Error
+                secure: true,                                 
+                maxAge: 24 * 60 * 60 * 1000
+            }
+        );
         res.status(200).json({
-            message: "User logged in successfully",
-            data: loginData 
+            userEmail,
+            name,
+            accessToken
         });        
     }
     catch(error)

@@ -7,7 +7,8 @@ import { registration } from "@prisma/client";
 // import { Registration } from "../user/user.type";
 import { verifyOTP } from "../../utils/otp";
 // import { UserLogin } from "./auth.type";
-import { generateToken } from "../../utils/jwt";
+import { generateRefreshToken, generateToken } from "../../utils/jwt";
+// import { NextFunction, Request, Response } from "express";
 
 const userCreate = async(user: any): Promise<registration> => {
     const {
@@ -93,12 +94,13 @@ const verifyUser = async(authUser: any) => {
     return true;
 };
 
-const userLogin = async (email: string, password: string): Promise<any> => {
+const userLogin = async (email: string, password: string) =>  {
     const userCheck = await prisma.registration.findUnique({
         where: {
             email
         }
     });
+    console.log(userCheck, "User Check")
     if(!userCheck)
     {
         throw new Error("User doesn't exist, do register first!");
@@ -111,19 +113,28 @@ const userLogin = async (email: string, password: string): Promise<any> => {
     {
         throw new Error("Email is not active, please activate your email first!");
     }
-    // const isPassword = await bcrypt.compare(password, userCheck.password);
     const isPassword = await comparePassword(password, userCheck.password);
     if(isPassword)
     {
         const userForToken = {
             email: userCheck.email,
-            id: userCheck.id
+            id: userCheck.id,
+            name: userCheck.name
         }
-        const token = generateToken(userForToken);
-        // const refreshToken = generateRefreshToken(userForToken);
+        const accessToken = generateToken(userForToken);
+
+        console.log(accessToken, "Access Token");
+
+        const refreshToken = generateRefreshToken(userForToken);
+
+        console.log(refreshToken, "Refresh Token");
+      
+        
         return {
-            email: userCheck.email,
-            token: token
+            userEmail: userCheck.email,
+            name: userCheck.name,
+            accessToken,
+            refreshToken
         };
     }
     else 
